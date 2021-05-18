@@ -1,7 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:votingsystem/src/Widget/menuPage.dart';
 import 'package:votingsystem/src/auth/signupPage.dart';
+import 'package:votingsystem/src/modules/api.dart';
+import 'package:dio/dio.dart';
+import 'package:votingsystem/src/strartPage.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key, this.title}) : super(key: key);
@@ -12,6 +17,76 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  // For CircularProgressIndicator
+  bool visible = false;
+  // Getting value from textField widget
+  String emailtext = "";
+  final _formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
+
+  Future userLogin() async {
+    // Showing circularProgressIndicator.
+    setState(() {
+      visible = true;
+    });
+
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    final form = _formKey.currentState;
+    form.save();
+
+    // Call the api
+
+    if (form.validate()) {
+      var data = {'email': email, 'password': password};
+
+      var response = await Dio().post(loginUserUrl, data: data);
+
+      if (response.data['message'] == "access_connexion_allowed...") {
+        setState(() {
+          visible = false;
+        });
+
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    StartPage(userid: response.data['access'].toString())));
+      } else {
+        // If Email or Password didn't matched.
+        // Hidding the CircularProgressIndicator.
+        // setState(() {
+        //   visible = false;
+        // });
+
+        // Showing alert Dialog with Response Json Message.
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: new Text(response.data['error']),
+                actions: <Widget>[
+                  TextButton(
+                    child: new Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  )
+                ],
+              );
+            });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -30,7 +105,75 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: height * .2),
                   _title(),
                   SizedBox(height: 50),
-                  _emailPasswordWidget(),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          height: 60.0,
+                          child: Center(
+                            child: TextFormField(
+                              controller: emailController,
+                              autocorrect: true,
+                              cursorColor: Colors.black,
+                              keyboardType: TextInputType.emailAddress,
+                              style: TextStyle(color: Colors.black),
+                              decoration: new InputDecoration(
+                                  labelText: "Email",
+                                  prefixIcon: Icon(
+                                    Icons.email,
+                                    color: Colors.black54,
+                                  ),
+                                  border: OutlineInputBorder(),
+                                  fillColor: Color(0xfff3f3f4),
+                                  filled: true,
+                                  labelStyle: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black54,
+                                  )),
+                              validator: (val) => val.isNotEmpty
+                                  ? null
+                                  : "Email field must not remain empty!.",
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 30.0),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          height: 60.0,
+                          child: TextFormField(
+                            controller: passwordController,
+                            autocorrect: true,
+                            cursorColor: Colors.black,
+                            obscureText: true,
+                            keyboardType: TextInputType.emailAddress,
+                            style: TextStyle(color: Colors.black54),
+                            decoration: new InputDecoration(
+                                labelText: "*********",
+                                prefixIcon: Icon(
+                                  Icons.security,
+                                  color: Colors.black54,
+                                ),
+                                border: OutlineInputBorder(),
+                                fillColor: Color(0xfff3f3f4),
+                                filled: true,
+                                labelStyle: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+                                )),
+                            validator: (val) => val.isNotEmpty
+                                ? null
+                                : "You have to the password!.",
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                   SizedBox(height: 20),
                   _loginButton(),
                   Container(
@@ -75,37 +218,34 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _inputField(String title, {bool isPassword = false}) {
-    return Container(
-        margin: EdgeInsets.symmetric(vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              title,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            TextField(
-                obscureText: isPassword,
-                decoration: InputDecoration(
-                  fillColor: Color(0xfff3f3f4),
-                  filled: true,
-                  border: OutlineInputBorder(),
-                  counterText: '0 characters',
-                ))
-          ],
-        ));
-  }
+  // Widget _inputField(String title, {bool isPassword = false}) {
+  //   return Container(
+  //       margin: EdgeInsets.symmetric(vertical: 10),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: <Widget>[
+  //           Text(
+  //             title,
+  //             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+  //           ),
+  //           SizedBox(
+  //             height: 10,
+  //           ),
+  //           TextField(
+  //               obscureText: isPassword,
+  //               decoration: InputDecoration(
+  //                 fillColor: Color(0xfff3f3f4),
+  //                 filled: true,
+  //                 border: OutlineInputBorder(),
+  //                 counterText: '0 characters',
+  //               ))
+  //         ],
+  //       ));
+  // }
 
   Widget _loginButton() {
     return InkWell(
-      onTap: () {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => MenuPage()));
-      },
+      onTap: userLogin,
       child: Container(
         width: MediaQuery.of(context).size.width,
         padding: EdgeInsets.symmetric(vertical: 15),
@@ -233,11 +373,15 @@ class _LoginPageState extends State<LoginPage> {
                     topRight: Radius.circular(5)),
               ),
               alignment: Alignment.center,
-              child: Text('Log in with Facebook',
+              child: InkWell(
+                child: Text(
+                  'Log in with Facebook',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
-                      fontWeight: FontWeight.w400)),
+                      fontWeight: FontWeight.w400),
+                ),
+              ),
             ),
           ),
         ],
@@ -298,12 +442,12 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _emailPasswordWidget() {
-    return Column(
-      children: <Widget>[
-        _inputField("Email"),
-        _inputField("Password", isPassword: true),
-      ],
-    );
-  }
+  // Widget _emailPasswordWidget() {
+  //   return Column(
+  //     children: <Widget>[
+  //       _inputField("Email"),
+  //       _inputField("Password", isPassword: true),
+  //     ],
+  //   );
+  // }
 }

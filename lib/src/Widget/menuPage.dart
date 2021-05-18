@@ -3,9 +3,9 @@ import 'package:votingsystem/src/Widget/candidateListPage.dart';
 import 'package:votingsystem/src/Widget/registerCandidatePage.dart';
 
 class MenuPage extends StatefulWidget {
-  MenuPage({Key key, this.title}) : super(key: key);
-
+  MenuPage({Key key, this.title, this.userid}) : super(key: key);
   final title;
+  final userid;
 
   @override
   _MenuPageState createState() => _MenuPageState();
@@ -14,6 +14,7 @@ class MenuPage extends StatefulWidget {
 class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
+    final userid = widget.userid;
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
         body: SingleChildScrollView(
@@ -42,7 +43,7 @@ class _MenuPageState extends State<MenuPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _voteCandidateButton(),
+                _voteCandidateButton(userid),
                 SizedBox(height: 80),
                 _candidateRegistrationButton(),
                 SizedBox(height: 80),
@@ -76,11 +77,13 @@ class _MenuPageState extends State<MenuPage> {
     );
   }
 
-  Widget _voteCandidateButton() {
+  Widget _voteCandidateButton(userid) {
     return InkWell(
       onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => CandidateListPage()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => CandidateListPage(userid: userid)));
       },
       child: Container(
         width: MediaQuery.of(context).size.width,

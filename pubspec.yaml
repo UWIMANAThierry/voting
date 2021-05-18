@@ -23,11 +23,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^0.3.5
-  image_picker: ^0.6.3
+  google_fonts: 
+  image_picker: 
   path: ^1.6.4
-  path_provider: ^1.5.1
+  path_provider: 
   provider: ^4.0.1
+  http: 0.13.3s
+  dio: 4.0.0 
+  camera: 
+  url_launcher:
  
 
 
@@ -38,6 +42,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
